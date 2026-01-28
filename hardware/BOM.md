@@ -1,4 +1,3 @@
-
 # Bill of Materials (BOM)
 
 ## Microcontrôleur
@@ -9,23 +8,31 @@
 ## Capteurs
 | Référence | Description | Quantité | Notes |
 |----------|-------------|----------|-------|
-| DHT11 | Capteur température & humidité | 1 | Précision limitée |
+| LDR | Capteur résistif de lumiere | 1 | Besoins d'un pont de resistance |
+| HC-SR501 | Capteur de mouvement | 1 | PIR |
+| Big Sound | Capteur de son | 1 | noise |
 
 ## Affichage
 | Référence | Description | Quantité | Notes |
 |----------|-------------|----------|-------|
-| LCD 16x2 I2C | Afficheur LCD avec module I2C | 1 | Adresse typique 0x27 |
+| LED | LED | 1 | test capteur |
+| Lampe | Led d'allumage | 1 | necessite un relais ou transistor |
+
+## Module de commandes
+| Référence | Description | Quantité | Notes |
+|----------|-------------|----------|-------|
+
 
 ## Actionneurs
 | Référence | Description | Quantité | Notes |
 |----------|-------------|----------|-------|
-| Boutton poussoir | Boutton | 4 | Navigation |
+| Relais | relais | 1 | Basculement 5v to 220v AC |
 
 ## Composants passifs
 | Référence | Description | Quantité | Notes |
 |----------|-------------|----------|-------|
-| Résistance 10kΩ | Résistance | 4 | Boutton poussoir |
-| Résistance 10kΩ | Résistance | 1 | DHT pull-up |
+| Résistance 220Ω | Résistance | 1 | Protection led |
+| Résistance 10kΩ | Résistance | 1 | Pont avec LDR |
 
 ## Alimentation
 | Référence | Description | Quantité | Notes |
@@ -37,3 +44,4 @@
 |----------|-------------|----------|-------|
 | Breadboard | Plaque d’essai | 1 | Prototype |
 | Fils Dupont | M/M, M/F | 14 | Connexions |
+| cable secteur | 10A 220v AC | 1 | alimenter la lampe |

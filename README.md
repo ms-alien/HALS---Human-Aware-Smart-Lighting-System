@@ -1,48 +1,54 @@
-# Station Meteo
+# HALS  
+Human-Aware Smart Lighting System
 
-Station météo embarquée basée sur Arduino, permettant de mesurer, afficher et mémoriser la température et l’humidité via un capteur DHT11, avec interface LCD et navigation par boutons.
+Système d’éclairage intelligent basé sur Arduino, capable d’allumer automatiquement une lampe uniquement lorsqu’une présence est détectée dans un environnement sombre.
+
+---
 
 ## 🎯 Objectif du projet
 
-Ce projet consiste à développer une station météo embarquée basée sur Arduino, capable de mesurer et d’afficher en temps réel la température et l’humidité ambiantes à l’aide d’un capteur DHT11.
+HALS vise à optimiser la consommation énergétique en combinant :
+- la détection de mouvement (présence humaine),
+- la mesure de la luminosité ambiante.
 
-L’objectif principal est de proposer une interface utilisateur simple et interactive, reposant sur un écran LCD I2C 16x2 et un système de navigation par boutons, permettant :
+La lampe ne s’allume **que si nécessaire**, évitant tout gaspillage inutile en plein jour ou en absence de mouvement.
 
-- la consultation des valeurs instantanées,
-- l’affichage des valeurs minimales et maximales enregistrées,
-- la sauvegarde persistante des données grâce à la mémoire EEPROM.
+Ce projet est conçu comme :
+- un démonstrateur fonctionnel de systèmes embarqués,
+- une base extensible pour des applications domotiques intelligentes.
 
-Ce projet est conçu comme une base pédagogique et fonctionnelle pour les systèmes embarqués orientés capteurs et interfaces homme-machine.
+---
 
+## ⚙️ Technologies utilisées
 
-## ⚙️ Technologie utilisé
 - Microcontrôleur : Arduino Uno
-- Language : C/C++
-- IDE : VS Code + PlatformIO
-- Capteurs : DHT11
-- Organes de commande : Bouton poussoir
-- Affichage : LCD I2C 16x2
-- Autres composants : Resistance, câble dupont
+- Langage : C / C++
+- Environnement : VS Code + PlatformIO
+- Capteurs :
+  - HC-SR501 (PIR)
+  - LDR (capteur de luminosité)
+- Actionneurs :
+  - Relais 5V
+  - Lampe 220V AC
+- Indicateur :
+  - LED témoin
 
-## 🧱 Structure du projet
+---
 
-StationMeteo/
-├── src/
-│   └── main.cpp
-├── hardware/
-│   ├── BOM.md
-│   ├── wiring.png
-│   └── schematic.pdf
-├── docs/
-│   └── setup.md
-├── assets/
-│   ├── demo/
-│   └── images/
-├── lib/
-├── include/
-├── test/
-└── README.md
+## 🧠 Principe de fonctionnement
 
+1. Lecture continue de la luminosité ambiante
+2. Filtrage logiciel pour éviter les variations brusques
+3. Détection de mouvement via PIR
+4. Si **obscurité + mouvement** :
+   - allumage lampe et LED
+   - lancement d’un timer
+5. Chaque nouveau mouvement prolonge l’allumage
+6. Extinction automatique après temporisation
+
+Le système est entièrement non bloquant et fonctionne en boucle continue.
+
+---
 
 ## 🔌 Matériel nécessaire
 
@@ -51,46 +57,54 @@ Voir le fichier [hardware/BOM.md](hardware/BOM.md)
 ## Schéma de câblage
 Voir [hardware/wiring.png](hardware/wiring.png).
 
+---
+
 ## 🔧 Installation et configuration
 1. Installer VS Code
 2. Installer l’extension PlatformIO
 3. Cloner le dépôt :
    ```bash
-   git clone https://github.com/ms-alien/Station_Meteo_Arduino.git
+   git clone https://github.com/ms-alien/HALS---Human-Aware-Smart-Lighting-System.git
 4. Ouvrir le projet avec PlatformIO
 5. Compiler et téléverser sur la carte
 6. Les détails sont disponibles dans [docs/setup.md](docs/setup.md).
 
 ## Fonctionnement
-Au démarrage, la station initialise l’écran LCD, le capteur DHT11, les boutons de navigation et charge depuis l’EEPROM les valeurs minimales et maximales précédemment enregistrées.
+HALS repose sur deux informations clés :
+- la présence humaine (capteur PIR HC-SR501),
+- la luminosité ambiante (LDR).
 
-L’interface utilisateur repose sur un menu principal affiché sur l’écran LCD, accessible via quatre boutons :
+Le programme fonctionne en boucle continue et suit la logique suivante :
 
-- UP : navigation vers le haut
-- DOWN : navigation vers le bas
-- OK : validation
-- BACK : retour au menu principal
+1. Le capteur LDR mesure la luminosité ambiante.
+   - La valeur brute est filtrée par un filtre exponentiel afin d’éliminer les variations rapides dues au bruit ou aux changements brusques de lumière.
+   - Une variable `isDark` est calculée en comparant la luminosité filtrée à un seuil prédéfini (`LDR_THRESHOLD`).
 
-Le menu principal propose trois sections :
+2. Le capteur PIR surveille la présence humaine.
+   - Lorsqu’un mouvement est détecté, un état interne `motionDetected` passe à vrai.
+   - Un minuteur est réinitialisé à chaque nouvelle détection.
 
-- Temperature : affiche la température actuelle en degrés Celsius.
-- Humidity : affiche l’humidité relative en pourcentage.
-- Min/Max : permet de consulter les valeurs minimales et maximales enregistrées.
+3. Si et seulement si :
+   - un mouvement est détecté,
+   - ET que l’environnement est sombre,
 
-Les mesures sont rafraîchies automatiquement toutes les secondes.
-À chaque nouvelle lecture valide, le système compare les valeurs actuelles avec les minimums et maximums existants. En cas de changement, les nouvelles valeurs sont sauvegardées automatiquement dans l’EEPROM, assurant leur conservation même après une coupure d’alimentation.
+   alors :
+   - la LED témoin s’allume,
+   - le relais est activé,
+   - la lampe s’allume.
 
-Dans la section Min/Max, l’utilisateur peut basculer entre :
+4. Tant que des mouvements sont détectés avant la fin du délai :
+   - le minuteur est relancé,
+   - la lampe reste allumée.
 
-- l’affichage des minimums et maximums de température,
-- l’affichage des minimums et maximums d’humidité.
+5. En l’absence de mouvement pendant la durée définie (`ledOnTime`) :
+   - la LED témoin s’éteint,
+   - le relais est désactivé,
+   - la lampe s’éteint automatiquement.
 
-Le programme fonctionne en boucle continue, assurant :
+Ce comportement garantit que l’éclairage ne fonctionne que lorsque cela est réellement nécessaire, réduisant ainsi la consommation énergétique.
 
-- la gestion des entrées utilisateur,
-- la mise à jour des données,
-- l’affichage dynamique selon l’état du menu actif.
-
+---
 
 ## 📷 Illustrations
 
@@ -98,9 +112,17 @@ Images et demonstration disponibles dans [assets/](assets/).
 
 ## 🚀 Améliorations futures
 
-Ajout d’un capteur plus précis
+Réglage dynamique du seuil de luminosité
 
-Communication Bluetooth / Wi-Fi 
+Communication Bluetooth / Wi-Fi
+
+Interface mobile
+
+Détection multi-zones
+
+Mode économie avancé
+
+---
 
 # 👤 Auteur
 
