@@ -37,7 +37,7 @@
 ## Alimentation
 | Référence | Description | Quantité | Notes |
 |----------|-------------|----------|-------|
-
+| 220V AC | Secteur 220V AC | 1 | Alimentation lampe |
 
 ## Connectique & divers
 | Référence | Description | Quantité | Notes |
